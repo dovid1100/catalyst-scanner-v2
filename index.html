@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CATALYST SCANNER v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f;
+    --surface: #0e1117;
+    --surface2: #141820;
+    --surface3: #1a2030;
+    --border: #1e2840;
+    --border2: #253050;
+    --text: #c8d4e8;
+    --text-dim: #4a6080;
+    --text-bright: #e8f0ff;
+    --accent: #3b82f6;
+    --accent-dim: rgba(59,130,246,0.12);
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.12);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.12);
+    --orange: #f59e0b;
+    --orange-dim: rgba(245,158,11,0.12);
+    --purple: #a855f7;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Inter', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* ── App Shell ── */
+  .app {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+  }
+
+  /* ── Header ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 0 16px;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    color: var(--text-bright);
+  }
+
+  .logo-pulse {
+    width: 8px; height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .status-dot.live { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .status-dot.offline { background: var(--red); }
+
+  /* ── Buttons ── */
+  .btn {
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 13px;
+    padding: 7px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover { background: #2563eb; }
+
+  .btn-ghost {
+    background: transparent;
+    border-color: var(--border2);
+    color: var(--text-dim);
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── Setup Banner ── */
+  .setup-banner {
+    margin: 20px 0;
+    padding: 20px;
+    background: var(--accent-dim);
+    border: 1px solid rgba(59,130,246,0.25);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .setup-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .setup-input {
+    flex: 1;
+    min-width: 260px;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-bright);
+    outline: none;
+  }
+  .setup-input:focus { border-color: var(--accent); }
+  .setup-input::placeholder { color: var(--text-dim); }
+
+  /* ── Stats Bar ── */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 16px 0;
+  }
+
+  .stat {
+    background: var(--surface);
+    padding: 14px 16px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+
+  .stat-value {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text-bright);
+    line-height: 1;
+  }
+
+  .stat-value.green { color: var(--green); }
+  .stat-value.red { color: var(--red); }
+  .stat-value.accent { color: var(--accent); }
+  .stat-value.orange { color: var(--orange); }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    margin: 20px 0 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tab {
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 18px;
+    cursor: pointer;
+    color: var(--text-dim);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.15s;
+  }
+
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .tab-content { display: none; padding-top: 20px; }
+  .tab-content.active { display: block; }
+
+  /* ── Today's Picks ── */
+  .picks-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .picks-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-dim);
+    font-family: var(--mono);
+  }
+
+  .picks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 12px;
+  }
+
+  /* ── Pick Card ── */
+  .pick-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+
+  .pick-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+  .pick-card.rank-1 { border-color: rgba(59,130,246,0.4); }
+  .pick-card.rank-2 { border-color: rgba(168,85,247,0.3); }
+  .pick-card.rank-3 { border-color: rgba(34,197,94,0.25); }
+
+  .pick-card-top {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pick-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .pick-rank {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .pick-rank.r1 { color: var(--accent); border-color: rgba(59,130,246,0.3); }
+  .pick-rank.r2 { color: var(--purple); border-color: rgba(168,85,247,0.3); }
+  .pick-rank.r3 { color: var(--green); border-color: rgba(34,197,94,0.3); }
+
+  .pick-ticker {
+    font-family: var(--mono);
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--text-bright);
+    line-height: 1;
+  }
+
+  .pick-name {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  .pick-price {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-bright);
+    text-align: right;
+  }
+
+  .pick-change {
+    font-family: var(--mono);
+    font-size: 12px;
+    text-align: right;
+  }
+
+  .pick-change.pos { color: var(--green); }
+  .pick-change.neg { color: var(--red); }
+
+  /* ── Confidence Bar ── */
+  .confidence-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .confidence-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    white-space: nowrap;
+    min-width: 70px;
+  }
+
+  .confidence-bar-wrap {
+    flex: 1;
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .confidence-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s ease;
+  }
+
+  .confidence-num {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    min-width: 36px;
+    text-align: right;
+  }
+
+  /* ── Urgency Badge ── */
+  .urgency-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .urgency-badge.BUY_BEFORE_OPEN { background: var(--red-dim); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+  .urgency-badge.WATCH_OPEN { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(245,158,11,0.3); }
+  .urgency-badge.MONITOR { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(59,130,246,0.3); }
+
+  /* ── Pick Card Body ── */
+  .pick-card-body { padding: 16px; }
+
+  .pick-section {
+    margin-bottom: 14px;
+  }
+
+  .pick-section:last-child { margin-bottom: 0; }
+
+  .pick-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 5px;
+  }
+
+  .pick-section-value {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  .pick-section-value.highlight {
+    color: var(--text-bright);
+    font-weight: 500;
+  }
+
+  .pick-meta-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .pick-meta-item {}
+
+  .signal-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+
+  .signal-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    border: 1px solid var(--border2);
+    color: var(--text-dim);
+  }
+
+  .signal-tag.volumeSpike { color: var(--green); border-color: rgba(34,197,94,0.3); background: var(--green-dim); }
+  .signal-tag.recentFiling { color: var(--accent); border-color: rgba(59,130,246,0.3); background: var(--accent-dim); }
+  .signal-tag.recentNews { color: var(--purple); border-color: rgba(168,85,247,0.3); background: rgba(168,85,247,0.1); }
+  .signal-tag.lowFloat { color: var(--orange); border-color: rgba(245,158,11,0.3); background: var(--orange-dim); }
+  .signal-tag.nearDollar { color: var(--red); border-color: rgba(239,68,68,0.3); background: var(--red-dim); }
+  .signal-tag.priceMove { color: var(--text); border-color: var(--border2); }
+
+  /* ── Outcome Badge ── */
+  .outcome-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  .outcome-win { border-color: rgba(34,197,94,0.3); background: var(--green-dim); }
+  .outcome-loss { border-color: rgba(239,68,68,0.2); background: var(--red-dim); }
+
+  .outcome-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .outcome-win .outcome-label { color: var(--green); }
+  .outcome-loss .outcome-label { color: var(--red); }
+
+  .outcome-move {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 500;
+    margin-left: auto;
+  }
+
+  .outcome-win .outcome-move { color: var(--green); }
+  .outcome-loss .outcome-move { color: var(--red); }
+
+  /* ── Empty State ── */
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+  }
+
+  .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.3; }
+
+  .empty-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+
+  .empty-sub {
+    font-size: 13px;
+    color: var(--text-dim);
+    max-width: 320px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* ── History Tab ── */
+  .history-controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .history-day {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+
+  .history-day-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .history-day-header:hover { background: rgba(255,255,255,0.02); }
+
+  .history-date {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-bright);
+  }
+
+  .history-day-stats {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .history-win-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .history-win-badge.all-win { background: var(--green-dim); color: var(--green); }
+  .history-win-badge.partial { background: var(--orange-dim); color: var(--orange); }
+  .history-win-badge.all-loss { background: var(--red-dim); color: var(--red); }
+  .history-win-badge.pending { background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border); }
+
+  .history-day-picks {
+    display: none;
+    padding: 12px 16px;
+    gap: 8px;
+    flex-direction: column;
+  }
+
+  .history-day-picks.open { display: flex; }
+
+  .history-pick-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    background: var(--surface2);
+    border-radius: 6px;
+    flex-wrap: wrap;
+  }
+
+  .history-ticker {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--accent);
+    min-width: 60px;
+  }
+
+  .history-catalyst {
+    flex: 1;
+    font-size: 12px;
+    color: var(--text-dim);
+    min-width: 120px;
+  }
+
+  .history-outcome {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .history-outcome.win { color: var(--green); }
+  .history-outcome.loss { color: var(--red); }
+  .history-outcome.pending { color: var(--text-dim); }
+
+  /* ── Accuracy Tab ── */
+  .accuracy-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .acc-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+  }
+
+  .acc-card-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+
+  .acc-big {
+    font-family: var(--mono);
+    font-size: 36px;
+    font-weight: 500;
+    line-height: 1;
+    color: var(--text-bright);
+  }
+
+  .acc-sub {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 5px;
+  }
+
+  .signal-breakdown {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .signal-breakdown-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .breakdown-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .breakdown-row:last-child { border-bottom: none; }
+
+  .breakdown-name {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    min-width: 110px;
+  }
+
+  .breakdown-bar-wrap { flex: 1; height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+  .breakdown-bar { height: 100%; background: var(--green); border-radius: 2px; }
+
+  .breakdown-stat {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    min-width: 70px;
+    text-align: right;
+  }
+
+  /* ── Learning Log ── */
+  .learning-log {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 16px;
+  }
+
+  .learning-log-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .learning-entry {
+    padding: 10px 16px;
+    font-size: 12px;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+    line-height: 1.6;
+    display: flex;
+    gap: 10px;
+  }
+
+  .learning-entry:last-child { border-bottom: none; }
+
+  .learning-bullet {
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 10px;
+    margin-top: 3px;
+    flex-shrink: 0;
+  }
+
+  /* ── Loading ── */
+  .loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-dim);
+    font-size: 13px;
+    padding: 30px;
+    justify-content: center;
+  }
+
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 12px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-bright);
+    z-index: 9999;
+    transform: translateY(70px);
+    opacity: 0;
+    transition: all 0.2s ease;
+    max-width: 320px;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-left: 3px solid var(--green); }
+  .toast.error { border-left: 3px solid var(--red); }
+  .toast.info { border-left: 3px solid var(--accent); }
+
+  /* ── Settings Modal ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 24px;
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .modal h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-bright);
+    margin-bottom: 16px;
+  }
+
+  .form-group { margin-bottom: 14px; }
+
+  .form-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .form-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 9px 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-bright);
+    outline: none;
+  }
+
+  .form-input:focus { border-color: var(--accent); }
+
+  .form-row { display: flex; gap: 8px; margin-top: 16px; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* ── Mobile ── */
+  @media (max-width: 600px) {
+    .picks-grid { grid-template-columns: 1fr; }
+    .accuracy-grid { grid-template-columns: 1fr 1fr; }
+    header { padding: 14px 0 12px; }
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .section-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <div class="logo-pulse"></div>
+      CATALYST SCANNER
+      <span style="font-size:10px;color:var(--text-dim);margin-left:2px">v2</span>
+    </div>
+    <div class="header-right">
+      <div class="status-pill">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">—</span>
+      </div>
+      <button class="btn btn-ghost" onclick="openSettings()">⚙ Settings</button>
+      <button class="btn btn-primary" id="scanBtn" onclick="triggerScan()">▶ Scan Now</button>
+    </div>
+  </header>
+
+  <!-- SETUP BANNER -->
+  <div class="setup-banner" id="setupBanner" style="display:none">
+    <span class="setup-label">Backend URL</span>
+    <input class="setup-input" type="text" id="backendInput" placeholder="https://your-app.onrender.com">
+    <button class="btn btn-primary" onclick="saveUrl()">Connect</button>
+  </div>
+
+  <!-- STATS BAR -->
+  <div class="stats-bar">
+    <div class="stat">
+      <div class="stat-label">Win Rate</div>
+      <div class="stat-value green" id="statWinRate">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Total Picks</div>
+      <div class="stat-value accent" id="statTotal">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Avg Move</div>
+      <div class="stat-value" id="statAvgMove">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Last Scan</div>
+      <div class="stat-value" style="font-size:12px;color:var(--text-dim)" id="statLastScan">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Next Scan</div>
+      <div class="stat-value" style="font-size:12px;color:var(--text-dim)" id="statNextScan">—</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('today', this)">Today's Picks</div>
+    <div class="tab" onclick="switchTab('history', this)">History</div>
+    <div class="tab" onclick="switchTab('accuracy', this)">Accuracy</div>
+  </div>
+
+  <!-- TODAY TAB -->
+  <div class="tab-content active" id="tab-today">
+    <div class="picks-header">
+      <div class="picks-title" id="picksSubtitle">Loading...</div>
+    </div>
+    <div id="todayContent">
+      <div class="loading"><div class="spinner"></div> Loading picks...</div>
+    </div>
+  </div>
+
+  <!-- HISTORY TAB -->
+  <div class="tab-content" id="tab-history">
+    <div id="historyContent">
+      <div class="loading"><div class="spinner"></div> Loading history...</div>
+    </div>
+  </div>
+
+  <!-- ACCURACY TAB -->
+  <div class="tab-content" id="tab-accuracy">
+    <div id="accuracyContent">
+      <div class="loading"><div class="spinner"></div> Loading stats...</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <h3>Settings</h3>
+    <div class="form-group">
+      <label class="form-label">Backend URL (Render)</label>
+      <input class="form-input" type="text" id="settingsUrl" placeholder="https://your-app.onrender.com">
+    </div>
+    <div class="form-row">
+      <button class="btn btn-primary" style="flex:1" onclick="saveSettings()">Save</button>
+      <button class="btn btn-ghost" onclick="closeSettings()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── State ────────────────────────────────────────────────────────────────────
+let backendUrl = localStorage.getItem('catalystV2Url') || '';
+let allPickSets = [];
+let statsData = null;
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  if (!backendUrl) {
+    document.getElementById('setupBanner').style.display = 'flex';
+    document.getElementById('statusText').textContent = 'Not connected';
+    document.getElementById('todayContent').innerHTML = renderEmpty('Not Connected', 'Enter your Render backend URL above to connect.');
+    return;
+  }
+  document.getElementById('backendInput').value = backendUrl;
+  loadAll();
+  setInterval(loadAll, 60000);
+  updateNextScanTime();
+  setInterval(updateNextScanTime, 60000);
+});
+
+function saveUrl() {
+  const val = document.getElementById('backendInput').value.trim().replace(/\/$/, '');
+  if (!val) { showToast('Enter a valid URL', 'error'); return; }
+  backendUrl = val;
+  localStorage.setItem('catalystV2Url', val);
+  document.getElementById('setupBanner').style.display = 'none';
+  loadAll();
+}
+
+async function loadAll() {
+  await Promise.all([loadToday(), loadStats()]);
+}
+
+// ─── API ──────────────────────────────────────────────────────────────────────
+async function api(path, opts = {}) {
+  if (!backendUrl) throw new Error('No backend URL');
+  const res = await fetch(backendUrl + path, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+// ─── Today's Picks ────────────────────────────────────────────────────────────
+async function loadToday() {
+  try {
+    const data = await api('/api/picks/today');
+    setStatus(true, data.status?.lastScan);
+    statsData = data.stats;
+    updateStatsBar(data.stats);
+
+    const container = document.getElementById('todayContent');
+    const subtitle = document.getElementById('picksSubtitle');
+
+    if (!data.picks) {
+      subtitle.textContent = 'No scan run today yet';
+      container.innerHTML = renderEmpty('No Picks Yet', 'Scans run at 9:00 AM and 9:00 PM EST on weekdays. Hit "Scan Now" to run manually.');
+      return;
+    }
+
+    const picks = data.picks.picks || [];
+    const scannedAt = data.picks.scannedAt ? formatTime(data.picks.scannedAt) : '';
+    const candidates = data.picks.candidatesConsidered || 0;
+
+    if (picks.length === 0) {
+      subtitle.textContent = `Scanned ${candidates} stocks at ${scannedAt} — no qualifying picks found`;
+      container.innerHTML = renderEmpty('No Qualifying Picks', `Claude analyzed ${candidates} candidates and found no stocks with sufficient confidence for a 20%+ move today. This is intentional — better to show nothing than show bad picks.`);
+      return;
+    }
+
+    subtitle.textContent = `${picks.length} pick${picks.length > 1 ? 's' : ''} · Scanned ${candidates} stocks · Updated ${scannedAt}`;
+    container.innerHTML = `<div class="picks-grid">${picks.map((p, i) => renderPickCard(p, i + 1)).join('')}</div>`;
+  } catch (e) {
+    setStatus(false);
+    document.getElementById('todayContent').innerHTML = renderEmpty('Connection Error', 'Could not reach backend. Check your URL in Settings.');
+  }
+}
+
+function renderPickCard(pick, rank) {
+  const conf = pick.confidence || 0;
+  const confColor = conf >= 80 ? 'var(--green)' : conf >= 65 ? 'var(--orange)' : 'var(--accent)';
+  const rankClass = `rank-${rank}`;
+  const rankLabel = rank === 1 ? '#1 TOP PICK' : rank === 2 ? '#2' : '#3';
+  const rankPillClass = `r${rank}`;
+  const urgency = pick.urgency || 'MONITOR';
+  const hasOutcome = pick.graded && pick.outcome;
+
+  const signals = (pick.keySignals || []).map(s =>
+    `<span class="signal-tag ${s}">${formatSignalName(s)}</span>`
+  ).join('');
+
+  const outcomeHtml = hasOutcome ? `
+    <div class="outcome-row ${pick.outcome.hit20Percent ? 'outcome-win' : 'outcome-loss'}">
+      <span class="outcome-label">${pick.outcome.hit20Percent ? '✓ HIT TARGET' : '✗ MISSED'}</span>
+      <span class="outcome-move">${pick.outcome.maxMovePercent >= 0 ? '+' : ''}${pick.outcome.maxMovePercent?.toFixed(1)}%</span>
+    </div>` : '';
+
+  return `
+<div class="pick-card ${rankClass}">
+  <div class="pick-card-top">
+    <div class="pick-card-header">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span class="pick-rank ${rankPillClass}">${rankLabel}</span>
+          <span class="urgency-badge ${urgency}">${formatUrgency(urgency)}</span>
+        </div>
+        <div class="pick-ticker">${pick.ticker}</div>
+        <div class="pick-name">${pick.companyName || pick.ticker}</div>
+      </div>
+      <div>
+        <div class="pick-price">$${(pick.entryPrice || 0).toFixed(2)}</div>
+        <div class="pick-change">Entry price</div>
+      </div>
+    </div>
+    <div class="confidence-section">
+      <span class="confidence-label">Confidence</span>
+      <div class="confidence-bar-wrap">
+        <div class="confidence-bar" style="width:${conf}%;background:${confColor}"></div>
+      </div>
+      <span class="confidence-num" style="color:${confColor}">${conf}%</span>
+    </div>
+    ${outcomeHtml}
+  </div>
+  <div class="pick-card-body">
+    <div class="pick-section">
+      <div class="pick-section-label">Why it will move</div>
+      <div class="pick-section-value highlight">${pick.catalystSummary || '—'}</div>
+    </div>
+    <div class="pick-meta-row">
+      <div class="pick-meta-item">
+        <div class="pick-section-label">Target Move</div>
+        <div class="pick-section-value" style="color:var(--green)">${pick.targetMove || '20%+'}</div>
+      </div>
+      <div class="pick-meta-item">
+        <div class="pick-section-label">Entry Timing</div>
+        <div class="pick-section-value">${pick.entryNote || '—'}</div>
+      </div>
+    </div>
+    <div class="pick-section">
+      <div class="pick-section-label">Risk</div>
+      <div class="pick-section-value" style="color:var(--text-dim)">${pick.riskNote || '—'}</div>
+    </div>
+    ${signals ? `<div class="pick-section"><div class="pick-section-label">Signals</div><div class="signal-tags">${signals}</div></div>` : ''}
+  </div>
+</div>`;
+}
+
+// ─── History ──────────────────────────────────────────────────────────────────
+async function loadHistory() {
+  const container = document.getElementById('historyContent');
+  container.innerHTML = '<div class="loading"><div class="spinner"></div> Loading...</div>';
+  try {
+    const data = await api('/api/picks');
+    allPickSets = data.picks || [];
+
+    if (allPickSets.length === 0) {
+      container.innerHTML = renderEmpty('No History Yet', 'Past scans will appear here once the scanner has run.');
+      return;
+    }
+
+    container.innerHTML = allPickSets.map((ps, i) => {
+      const picks = ps.picks || [];
+      const graded = picks.filter(p => p.graded && p.outcome);
+      const wins = graded.filter(p => p.outcome.hit20Percent);
+      const pending = picks.filter(p => !p.graded);
+
+      let badgeClass = 'pending';
+      let badgeText = `${pending.length} pending`;
+      if (graded.length > 0 && pending.length === 0) {
+        if (wins.length === picks.length) { badgeClass = 'all-win'; badgeText = '✓ All hit'; }
+        else if (wins.length === 0) { badgeClass = 'all-loss'; badgeText = '✗ All missed'; }
+        else { badgeClass = 'partial'; badgeText = `${wins.length}/${picks.length} hit`; }
+      }
+
+      const picksHtml = picks.map(p => {
+        const outcome = p.graded && p.outcome;
+        const moveStr = outcome ? `${p.outcome.maxMovePercent >= 0 ? '+' : ''}${p.outcome.maxMovePercent?.toFixed(1)}%` : 'Pending';
+        const outClass = outcome ? (p.outcome.hit20Percent ? 'win' : 'loss') : 'pending';
+        return `<div class="history-pick-row">
+          <span class="history-ticker">${p.ticker}</span>
+          <span class="history-catalyst">${(p.catalystSummary || '—').substring(0, 80)}${p.catalystSummary?.length > 80 ? '...' : ''}</span>
+          <span class="history-outcome ${outClass}">${moveStr}</span>
+        </div>`;
+      }).join('');
+
+      return `<div class="history-day">
+        <div class="history-day-header" onclick="toggleHistory('hist-${i}')">
+          <span class="history-date">${formatDate(ps.date)} — ${picks.length} pick${picks.length !== 1 ? 's' : ''}</span>
+          <div class="history-day-stats">
+            <span class="history-win-badge ${badgeClass}">${badgeText}</span>
+            <span style="color:var(--text-dim);font-size:12px">${ps.candidatesConsidered || 0} scanned</span>
+          </div>
+        </div>
+        <div class="history-day-picks" id="hist-${i}">${picksHtml}</div>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    container.innerHTML = renderEmpty('Error', e.message);
+  }
+}
+
+function toggleHistory(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+// ─── Accuracy ─────────────────────────────────────────────────────────────────
+async function loadStats() {
+  try {
+    const data = await api('/api/stats');
+    statsData = data.stats;
+    updateStatsBar(data.stats);
+
+    if (document.getElementById('tab-accuracy').classList.contains('active')) {
+      renderAccuracyTab(data.stats, data.learningLog || []);
+    }
+  } catch (e) {}
+}
+
+function renderAccuracyTab(stats, learningLog) {
+  const container = document.getElementById('accuracyContent');
+  if (!stats || stats.totalPicks === 0) {
+    container.innerHTML = renderEmpty('No Data Yet', 'Accuracy tracking begins after picks are graded (5 days after each pick).');
+    return;
+  }
+
+  const bySignal = stats.bySignalType || {};
+  const breakdownRows = Object.entries(bySignal)
+    .sort((a, b) => (b[1].wins / b[1].total) - (a[1].wins / a[1].total))
+    .map(([sig, d]) => {
+      const wr = Math.round((d.wins / d.total) * 100);
+      return `<div class="breakdown-row">
+        <span class="breakdown-name">${formatSignalName(sig)}</span>
+        <div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${wr}%"></div></div>
+        <span class="breakdown-stat">${wr}% · ${d.total} picks</span>
+      </div>`;
+    }).join('');
+
+  const lessons = learningLog.slice(-10).reverse().map(l =>
+    `<div class="learning-entry"><span class="learning-bullet">→</span><span>${l}</span></div>`
+  ).join('');
+
+  container.innerHTML = `
+    <div class="accuracy-grid">
+      <div class="acc-card">
+        <div class="acc-card-title">Win Rate</div>
+        <div class="acc-big" style="color:${stats.winRate >= 65 ? 'var(--green)' : stats.winRate >= 50 ? 'var(--orange)' : 'var(--red)'}">${stats.winRate}%</div>
+        <div class="acc-sub">Target: 65%</div>
+      </div>
+      <div class="acc-card">
+        <div class="acc-card-title">Total Picks</div>
+        <div class="acc-big" style="color:var(--accent)">${stats.totalPicks}</div>
+        <div class="acc-sub">${stats.correctPicks} hit 20%+</div>
+      </div>
+      <div class="acc-card">
+        <div class="acc-card-title">Avg Move</div>
+        <div class="acc-big" style="color:var(--text-bright)">${stats.avgMove >= 0 ? '+' : ''}${stats.avgMove}%</div>
+        <div class="acc-sub">Across all picks</div>
+      </div>
+    </div>
+
+    ${breakdownRows ? `<div class="signal-breakdown">
+      <div class="signal-breakdown-title">Win Rate by Signal Type</div>
+      ${breakdownRows}
+    </div>` : ''}
+
+    ${lessons ? `<div class="learning-log">
+      <div class="learning-log-title">🧠 What Claude Has Learned</div>
+      ${lessons}
+    </div>` : ''}
+  `;
+}
+
+function updateStatsBar(stats) {
+  if (!stats) return;
+  document.getElementById('statWinRate').textContent = stats.totalPicks ? `${stats.winRate}%` : '—';
+  document.getElementById('statTotal').textContent = stats.totalPicks || '0';
+  const avgEl = document.getElementById('statAvgMove');
+  avgEl.textContent = stats.totalPicks ? `${stats.avgMove >= 0 ? '+' : ''}${stats.avgMove}%` : '—';
+  avgEl.className = 'stat-value ' + (stats.avgMove >= 20 ? 'green' : stats.avgMove >= 0 ? '' : 'red');
+}
+
+// ─── Scan ─────────────────────────────────────────────────────────────────────
+async function triggerScan() {
+  const btn = document.getElementById('scanBtn');
+  btn.disabled = true;
+  btn.textContent = '⟳ Scanning...';
+  showToast('Scan started — takes ~2 minutes', 'info');
+  try {
+    await api('/api/scan', { method: 'POST' });
+    setTimeout(async () => {
+      await loadAll();
+      btn.disabled = false;
+      btn.textContent = '▶ Scan Now';
+      showToast('Scan complete', 'success');
+    }, 120000);
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = '▶ Scan Now';
+    showToast('Scan error: ' + e.message, 'error');
+  }
+}
+
+// ─── Settings ─────────────────────────────────────────────────────────────────
+function openSettings() {
+  document.getElementById('settingsUrl').value = backendUrl;
+  document.getElementById('settingsModal').classList.add('open');
+}
+
+function closeSettings() {
+  document.getElementById('settingsModal').classList.remove('open');
+}
+
+function saveSettings() {
+  const val = document.getElementById('settingsUrl').value.trim().replace(/\/$/, '');
+  if (!val) { showToast('Enter a valid URL', 'error'); return; }
+  backendUrl = val;
+  localStorage.setItem('catalystV2Url', val);
+  closeSettings();
+  showToast('Backend URL saved', 'success');
+  loadAll();
+}
+
+// ─── Tabs ─────────────────────────────────────────────────────────────────────
+function switchTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(`tab-${name}`).classList.add('active');
+  if (name === 'history') loadHistory();
+  if (name === 'accuracy') loadStats().then(() => {
+    if (statsData) renderAccuracyTab(statsData, []);
+    api('/api/stats').then(d => renderAccuracyTab(d.stats, d.learningLog || [])).catch(() => {});
+  });
+}
+
+// ─── Status ───────────────────────────────────────────────────────────────────
+function setStatus(online, lastScan) {
+  const dot = document.getElementById('statusDot');
+  const text = document.getElementById('statusText');
+  dot.className = 'status-dot ' + (online ? 'live' : 'offline');
+  text.textContent = online ? 'Live' : 'Offline';
+  if (lastScan) {
+    document.getElementById('statLastScan').textContent = formatTime(lastScan);
+  }
+}
+
+function updateNextScanTime() {
+  const now = new Date();
+  const est = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+  const h = est.getHours();
+  const m = est.getMinutes();
+  const day = est.getDay();
+
+  let nextLabel = '';
+  if (day === 0 || day === 6) {
+    nextLabel = 'Mon 9:00 AM';
+  } else if (h < 9 || (h === 9 && m === 0)) {
+    nextLabel = 'Today 9:00 AM';
+  } else if (h < 21) {
+    nextLabel = 'Tonight 9:00 PM';
+  } else {
+    const tomorrow = day === 5 ? 'Mon' : 'Tomorrow';
+    nextLabel = `${tomorrow} 9:00 AM`;
+  }
+  document.getElementById('statNextScan').textContent = nextLabel;
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function renderEmpty(title, sub) {
+  return `<div class="empty"><div class="empty-icon">◎</div><div class="empty-title">${title}</div><div class="empty-sub">${sub}</div></div>`;
+}
+
+function formatTime(iso) {
+  try {
+    return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  } catch { return iso; }
+}
+
+function formatDate(str) {
+  if (!str) return '—';
+  try {
+    return new Date(str + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  } catch { return str; }
+}
+
+function formatSignalName(sig) {
+  const map = {
+    volumeSpike: 'Vol Spike',
+    recentFiling: 'SEC Filing',
+    recentNews: 'News',
+    lowFloat: 'Low Float',
+    nearDollar: 'Near $1',
+    priceMove: 'Price Move',
+    momentum: 'Momentum'
+  };
+  return map[sig] || sig;
+}
+
+function formatUrgency(u) {
+  const map = {
+    BUY_BEFORE_OPEN: '⚡ Buy Before Open',
+    WATCH_OPEN: '👁 Watch Open',
+    MONITOR: '· Monitor'
+  };
+  return map[u] || u;
+}
+
+let toastTimer;
+function showToast(msg, type = 'info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>
